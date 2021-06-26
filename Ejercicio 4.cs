@@ -46,6 +46,8 @@ namespace Domain.Entities
 
 namespace Infrastructure.Data.Repositories
 {
+    using Domain.Entities;
+
 	public interface ICajaRepository 
 	{
 		Task<IEnumerable<Caja>> GetAllAsync();
@@ -58,8 +60,22 @@ namespace Infrastructure.Data.Repositories
 		Task<Sucursal> GetOneAsync(int id);
 	}
 	
-    public class BaseRepository<T>
+    public class BaseRepository<TEntity, TId> where TEntity : BaseEntity<TId>
     {
+        protected readonly DataContext _db;
+
+        public BaseRepository(DataContext db) =>
+            _db = db ?? throw new ArgumentNullException(nameof(db));
+
+        public async Task<IEnumerable<TEntity>> GetAllAsync()
+        {
+            return await _db.Set<TEntity>().ToListAsync();
+        }
+
+        public async Task<TEntity> GetOneAsync(TId id)
+        {
+            return await _db.Set<TEntity>().FirstOrDefaultAsync(x => x.Id == id);
+        }
     }
 
     public class CajaRepository
