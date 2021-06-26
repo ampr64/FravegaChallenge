@@ -24,7 +24,7 @@ namespace Domain.Entities
         public Caja(Guid id, int sucursalId, string descripcion, int tipoCajaId)
             : base(id)
         {
-            SucursalId = sucursalId;   
+            SucursalId = sucursalId;
             Descripcion = descripcion;
             TipoCajaId = tipoCajaId;
         }
@@ -48,18 +48,18 @@ namespace Infrastructure.Data.Repositories
 {
     using Domain.Entities;
 
-	public interface ICajaRepository 
-	{
-		Task<IEnumerable<Caja>> GetAllAsync();
-		Task<Caja> GetOneAsync(Guid id);
-	}
-	
-	public interface ISucursalRepository
-	{
-		Task<IEnumerable<Sucursal>> GetAllAsync();
-		Task<Sucursal> GetOneAsync(int id);
-	}
-	
+    public interface ICajaRepository
+    {
+        Task<IEnumerable<Caja>> GetAllAsync();
+        Task<Caja> GetOneAsync(Guid id);
+    }
+
+    public interface ISucursalRepository
+    {
+        Task<IEnumerable<Sucursal>> GetAllAsync();
+        Task<Sucursal> GetOneAsync(int id);
+    }
+
     public class BaseRepository<TEntity, TId> where TEntity : BaseEntity<TId>
     {
         protected readonly DataContext _db;
@@ -78,31 +78,19 @@ namespace Infrastructure.Data.Repositories
         }
     }
 
-    public class CajaRepository
+    public class CajaRepository : BaseRepository<Caja, Guid>, ICajaRepository
     {
-        private readonly DataContext _db;
-
         public CajaRepository(DataContext db)
-            => _db = db;
-
-        public async Task<IEnumerable<Caja>> GetAllAsync()
-            => await _db.Cajas.ToListAsync();
-
-        public async Task<Caja> GetOneAsync(Guid id)
-            => await _db.Cajas.FirstOrDefaultAsync(x => x.Id == id);
+            : base(db)
+        {
+        }
     }
 
-    public class SucursalRepository
+    public class SucursalRepository : BaseRepository<Sucursal, int>, ISucursalRepository
     {
-        private readonly DataContext _db;
-
         public CajaRepository(DataContext db)
-            => _db = db;
-
-        public async Task<IEnumerable<Sucursal>> GetAllAsync()
-            => await _db.Sucursales.ToListAsync();
-
-        public async Task<Sucursal> GetOneAsync(int id)
-            => await _db.Sucursales.FirstOrDefaultAsync(x => x.Id == id);
+            : base(db)
+        {
+        }
     }
 }
