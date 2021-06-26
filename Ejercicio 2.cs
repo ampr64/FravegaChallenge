@@ -75,13 +75,14 @@ public class CajaRepository
     public async Task<List<Caja>> GetAllBySucursalAsync(int sucursalId)
     {
         var cacheCajas = await _cache.GetOrDefaultAsync<List<Caja>>(_cacheKey);
+        var cajasSucursal = null;
 
         if (cacheCajas != null)
         {
-            return cacheCajas.Where(c => c.SucursalId == sucursalId);
+            cajasSucursal = cacheCajas.Where(c => c.SucursalId == sucursalId);
         }
 
-        return await _db.Cajas.Where(c => c.SucursalId == sucursalId)
+        return cajasSucursal ?? await _db.Cajas.Where(c => c.SucursalId == sucursalId)
             .ToListAsync();
     }
 
