@@ -45,9 +45,9 @@ public class CajaRepository
 
     public CajaRepository(DataContext db, ICache cache, IOptions<CacheConfiguration> options)
     {
-        _db = db ?? throw new ArgumentNullException(nameof(DataContext));
-        _cache = cache ?? throw new ArgumentNullException(nameof(ICache));
-        _cacheConfiguration = options.Value ?? throw new ArgumentNullException(nameof(CacheConfiguration));
+        _db = db ?? throw new ArgumentNullException(nameof(db));
+        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+        _cacheConfiguration = options.Value ?? throw new ArgumentNullException(nameof(options));
     }
 
     public async Task AddAsync(Caja caja)
