@@ -7,31 +7,37 @@ Aclaración: Se deben respetar la interfaces.
 
 namespace Domain.Entities
 {
-    public class Caja
+    public abstract class BaseEntity<TId>
     {
-        public Guid Id { get; }
+        public TId Id { get; }
+
+        protected BaseEntity(TId id) =>
+            Id = id;
+    }
+
+    public class Caja : BaseEntity<Guid>
+    {
         public int SucursalId { get; }
         public string Descripcion { get; }
         public int TipoCajaId { get; }
 
         public Caja(Guid id, int sucursalId, string descripcion, int tipoCajaId)
+            : base(id)
         {
-            Id = id;
             SucursalId = sucursalId;   
             Descripcion = descripcion;
             TipoCajaId = tipoCajaId;
         }
     }
 
-    public class Sucursal
+    public class Sucursal : BaseEntity<int>
     {
-        public int Id { get; }
         public string Direccion { get; }
         public string Telefono { get; }
 
         public Sucursal(int id, string direccion, string telefono)
+            : base(id)
         {
-            Id = id;
             Direccion = direccion;
             Telefono = telefono;
         }
