@@ -13,22 +13,11 @@ Aclaración:
 	* No realizar una implementación de ICache, otro equipo la esta brindando
 */
 
-using Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 public interface ICache
 {
     Task AddAsync<T>(string key, T obj, int? durationInMinutes);
     Task<T> GetOrDefaultAsync<T>(string key);
     Task RemoveAsync(string key);
-}
-
-public class DataContext : DbContext
-{
-    public DbSet<Caja> Cajas { get; set; }
 }
 
 public class CacheConfiguration
@@ -54,48 +43,34 @@ public class CajaRepository
     {
         await _db.Cajas.AddAsync(caja);
         await _db.SaveChangesAsync();
+
+        // Remove entry from cache to trigger update
+        await _cache.RemoveAsync(_cacheKey);
     }
 
     public async Task<List<Caja>> GetAllAsync()
     {
-        var cacheCajas = await _cache.GetOrDefaultAsync<List<Caja>>(_cacheKey);
+        var result = await _cache.GetOrDefaultAsync<List<Caja>>(_cacheKey);
 
-        if (cacheCajas != null)
+        if (result is null)
         {
-            return cacheCajas;
+            result = await _db.Cajas.AsNoTracking().ToListAsync();
+            await _cache.AddAsync<List<Caja>>(_cacheKey, result, _cacheConfiguration.CajaCacheDuration);
         }
 
-        cacheCajas = await _db.Cajas.ToListAsync();
-
-        await _cache.AddAsync<List<Caja>>(_cacheKey, cacheCajas, _cacheConfiguration.CajaCacheDuration);
-
-        return cacheCajas;
+        return result;
     }
 
     public async Task<List<Caja>> GetAllBySucursalAsync(int sucursalId)
     {
-        var cacheCajas = await _cache.GetOrDefaultAsync<List<Caja>>(_cacheKey);
-        var cajasSucursal = null;
-
-        if (cacheCajas != null)
-        {
-            cajasSucursal = cacheCajas.Where(c => c.SucursalId == sucursalId);
-        }
-
-        return cajasSucursal ?? await _db.Cajas.Where(c => c.SucursalId == sucursalId)
-            .ToListAsync();
+        return (await GetAllAsync())
+            .Where(c => c.SucursalId == sucursalId)
+            .ToList();
     }
 
     public async Task<Caja> GetOneAsync(Guid id)
     {
-        var cacheCajas = await _cache.GetOrDefaultAsync<List<Caja>>(_cacheKey);
-        var caja = null;
-
-        if (cacheCajas != null)
-        {
-            caja = cacheCajas.FirstOrDefault(c => c.Id == id);
-        }
-
-        return caja ?? await _db.Cajas.FirstOrDefaultAsync(c => c.Id == id);
+        return (await GetAllAsync())
+            .FirstOrDefault(c => c.Id == id);
     }
 }
